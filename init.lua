@@ -20,6 +20,10 @@ include('relatedness/LSTMSim.lua')
 include('relatedness/TreeLSTMSim.lua')
 include('sentiment/LSTMSentiment.lua')
 include('sentiment/TreeLSTMSentiment.lua')
+--------------------------------------------------------------------------------
+include('sentiment/AttentionTreeLSTMSentiment.lua')
+include('models/LSTMDecoder.lua')
+--------------------------------------------------------------------------------
 
 printf = utils.printf
 

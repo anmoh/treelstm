@@ -57,3 +57,19 @@ function Tree:depth_first_preorder()
   depth_first_preorder(self, nodes)
   return nodes
 end
+
+local function depth_first_preorder_2(tree, nodes)
+  if tree == nil then
+    return
+  end
+  for i = 1, tree.num_children do
+    depth_first_preorder(tree.children[i], nodes)
+  end
+  table.insert(nodes, tree)
+end
+
+function Tree:depth_first_preorder_2()
+  local nodes = {}
+  depth_first_preorder_2(self, nodes)
+  return nodes
+end

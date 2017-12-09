@@ -138,7 +138,7 @@ function LSTMSentiment:train(dataset)
             }
           end
 
-          -- compute class log probabilities
+          --// compute class log probabilities
           local output = self.sentiment_module:forward(rep)
 
           -- compute loss and backpropagate

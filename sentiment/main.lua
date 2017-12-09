@@ -28,6 +28,11 @@ if args.model == 'constituency' then
 elseif args.model == 'dependency' then
   model_name = 'Dependency Tree LSTM'
   model_class = treelstm.TreeLSTMSentiment
+--------------------------------------------------------------------------------
+elseif args.model == 'attention' then
+  model_name = 'Attention Tree LSTM'
+  model_class = treelstm.AttentionTreeLSTMSentiment
+--------------------------------------------------------------------------------
 elseif args.model == 'lstm' then
   model_name = 'LSTM'
   model_class = treelstm.LSTMSentiment
@@ -76,7 +81,7 @@ print('loading datasets')
 local train_dir = data_dir .. 'train/'
 local dev_dir = data_dir .. 'dev/'
 local test_dir = data_dir .. 'test/'
-local dependency = (args.model == 'dependency')
+local dependency = (args.model == 'dependency' or args.model == 'attention')
 local train_dataset = treelstm.read_sentiment_dataset(train_dir, vocab, fine_grained, dependency)
 local dev_dataset = treelstm.read_sentiment_dataset(dev_dir, vocab, fine_grained, dependency)
 local test_dataset = treelstm.read_sentiment_dataset(test_dir, vocab, fine_grained, dependency)
@@ -107,6 +112,15 @@ local train_start = sys.clock()
 local best_dev_score = -1.0
 local best_dev_model = model
 header('Training model')
+function table.slice(tbl, first, last, step)
+  local sliced = {}
+
+  for i = first or 1, last or #tbl, step or 1 do
+    sliced[#sliced+1] = tbl[i]
+  end
+
+  return sliced
+end
 for i = 1, num_epochs do
   local start = sys.clock()
   printf('-- epoch %d\n', i)
@@ -119,7 +133,8 @@ for i = 1, num_epochs do
   local train_score = accuracy(train_predictions, train_dataset.labels)
   printf('-- train score: %.4f\n', train_score)
   --]]
-
+  --model:get_final_accuracy(train_dataset)
+  model:get_final_accuracy(test_dataset)
   local dev_predictions = model:predict_dataset(dev_dataset)
   local dev_score = accuracy(dev_predictions, dev_dataset.labels)
   printf('-- dev score: %.4f\n', dev_score)

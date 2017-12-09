@@ -124,6 +124,79 @@ function TreeLSTMSentiment:predict_dataset(dataset)
   return predictions
 end
 
+function table.slice(tbl, first, last, step)
+  local sliced = {}
+
+  for i = first or 1, last or #tbl, step or 1 do
+    sliced[#sliced+1] = tbl[i]
+  end
+
+  return sliced
+end
+
+function TreeLSTMSentiment:get_accuracy(dataset)
+  --dataset=table.slice(dataset,1,100)
+  local total=0
+  local correct=0
+  local sd
+  sd=dataset.size
+  dataset.size=100
+  for i = 1, dataset.size do
+   xlua.progress(i, dataset.size)
+    print(dataset.sents[i])
+    local inputs = self.emb:forward(dataset.sents[i])
+    local currentTree = dataset.trees[i]
+       local ct
+        local cc
+
+    ct,cc=self:get_tree_accuracy(currentTree, inputs)
+    total=total+ct
+    correct=correct+cc
+  --print(correct)
+  --print("^Correct\n")
+  --print(correct/total)
+  end
+  dataset.size=sd
+  print("Accuracy .... : ")
+  print(correct/total)
+end
+
+function TreeLSTMSentiment:get_tree_accuracy(tree, inputs)
+    local correct=0
+    local total=0
+    self.treelstm:forward(tree , inputs) 
+    local output = tree.output
+    local prediction
+    if self.fine_grained then
+       prediction = argmax(output)
+    else
+       prediction = (output[1] > output[3]) and 1 or 3
+    end
+    --print("Prediction: " )
+    if prediction==tree.gold_label then
+      --print("Prediction: " )
+      --print(prediction)
+      --print("\n")
+      --print("GL\n")
+      --print(tree.gold_label)
+      correct=correct+1
+    end
+    total=total+1
+    for i = 1, tree.num_children do
+      if tree.children[i].gold_label~=nil then
+       local ct
+        local cc
+       ct, cc =  self:get_tree_accuracy(tree.children[i], inputs)
+      total=total+ct
+      correct=correct+cc
+       end 
+    end
+    return total, correct
+ end
+
+
+
+
 function argmax(v)
   local idx = 1
   local max = v[1]
